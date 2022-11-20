@@ -21,7 +21,7 @@ var _baking_thread_mtx := Mutex.new()
 var _exit_baking_thread := false
 var _navmeshes_to_rebake = []
 
-signal _baking_process_finished
+signal navmesh_updated
 
 
 func get_class(): return "NavmeshSplitter"
@@ -94,7 +94,7 @@ func rebuild():
 
 	# Use rebake_all + yield instead of a direct call to _rebake_now() to let the editor run while baking
 	rebake_all()
-	yield(self, "_baking_process_finished")
+	yield(self, "navmesh_updated")
 
 	var rebuild_end_time := OS.get_ticks_msec()
 	print("The complete rebuild took ", rebuild_end_time - rebuild_begin_time, "ms to complete")
@@ -165,7 +165,7 @@ func _rebake_now(var to_process):
 		var navesh_bake_end_time = OS.get_ticks_msec()
 		print("Navmesh took ", navesh_bake_end_time - navesh_bake_begin_time, "ms to bake")
 
-	emit_signal("_baking_process_finished")
+	emit_signal("navmesh_updated")
 
 
 func _get_configuration_warning() -> String:
