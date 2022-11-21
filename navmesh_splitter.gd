@@ -36,16 +36,17 @@ func _ready():
 		var map_rid = NavigationServer.region_get_map(region_rid)
 		NavigationServer.map_set_edge_connection_margin(map_rid, edge_connection_margin)
 
-	var child_idx := 0
-	for x in range(subdivide_width):
-		_navmesh_instances.append([])
-		for y in range(subdivide_height):
-			_navmesh_instances[x].append([])
-			for z in range(subdivide_depth):
-				_navmesh_instances[x][y].append([])
-				var navmesh_instance = get_child(child_idx)
-				_navmesh_instances[x][y][z] = navmesh_instance
-				++child_idx
+	if get_child_count() > 0:
+		var child_idx := 0
+		for x in range(subdivide_width):
+			_navmesh_instances.append([])
+			for y in range(subdivide_height):
+				_navmesh_instances[x].append([])
+				for z in range(subdivide_depth):
+					_navmesh_instances[x][y].append([])
+					var navmesh_instance = get_child(child_idx)
+					_navmesh_instances[x][y][z] = navmesh_instance
+					++child_idx
 
 	_baking_thread.start(self, "_rebaking_process")
 
@@ -157,15 +158,16 @@ func _rebaking_process():
 
 
 func _rebake_now(var to_process):
-	for node in to_process:
-		var navmesh_instance := node as NavigationMeshInstance
-		var navesh_bake_begin_time = OS.get_ticks_msec()
-		print("Start baking ", navmesh_instance)
-		navmesh_instance.bake_navigation_mesh(false)
-		var navesh_bake_end_time = OS.get_ticks_msec()
-		print("Navmesh took ", navesh_bake_end_time - navesh_bake_begin_time, "ms to bake")
-
-	emit_signal("navmesh_updated")
+	if to_process and len(to_process) > 0:
+		for node in to_process:
+			var navmesh_instance := node as NavigationMeshInstance
+			var navesh_bake_begin_time = OS.get_ticks_msec()
+			print("Start baking ", navmesh_instance)
+			navmesh_instance.bake_navigation_mesh(false)
+			var navesh_bake_end_time = OS.get_ticks_msec()
+			print("Navmesh took ", navesh_bake_end_time - navesh_bake_begin_time, "ms to bake")
+		
+		emit_signal("navmesh_updated")
 
 
 func _get_configuration_warning() -> String:
